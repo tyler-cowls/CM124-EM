@@ -22,7 +22,7 @@ def get_genotypes(file_path):
     return genotypes
 
 # build dictionary to map all haplotype pairs to their corresponding initial probabilities
-def build_haplotype_dictionary(haplotype_pair_list):
+def build_haplotype_pair_dictionary(haplotype_pair_list):
     num_pairs = len(haplotype_pair_list)
     haplotype_dict = {}
     initial_prob = 1.0 / num_pairs
@@ -39,14 +39,14 @@ def build_genotype_dictionary(genotypes):
 
     for i in range(0, num_gens):
         hap_pairs = phase(genotypes[i])
-        hap_dict = build_haplotype_dictionary(hap_pairs)
+        hap_dict = build_haplotype_pair_dictionary(hap_pairs)
         gen_dict[genotypes[i]] = hap_dict
 
     return gen_dict
 
 
-def main():
-    genotypes = get_genotypes("/Users/dnicolaou/Desktop/test_data_2.txt")
-    window = genotypes[0][0:51]
-
-main()
+# def main():
+#     genotypes = get_genotypes("/Users/dnicolaou/Desktop/test_data_2.txt")
+#     window = genotypes[0][0:51]
+#
+# main()
