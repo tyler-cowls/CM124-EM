@@ -33,16 +33,36 @@ def build_haplotype_pair_dictionary(haplotype_pair_list):
     return haplotype_dict
 
 # build dictionary that maps all genotypes to their corresponding haplotype dictionaries
-def build_genotype_dictionary(genotypes):
+# builds a unique haplotype dictionary
+def build_dictionaries(genotypes):
     num_gens = len(genotypes)
     gen_dict = {}
+    unique_hap_dict = {}
+    unique_haps = set()
 
     for i in range(0, num_gens):
-        hap_pairs = phase(genotypes[i])
-        hap_dict = build_haplotype_pair_dictionary(hap_pairs)
+        (phases, haps) = phase(genotypes[i])
+        hap_dict = build_haplotype_pair_dictionary(phases)
         gen_dict[genotypes[i]] = hap_dict
+        for hap in haps:
+            unique_haps.add(hap)
 
-    return gen_dict
+    unique_haps = list(unique_haps)
+    num_unique_haps = len(unique_haps)
+    initial_hap_prob = 1.0 / num_unique_haps
+    for i in range(0, num_unique_haps):
+        unique_hap_dict[unique_haps[i]] = initial_hap_prob
+
+    return (gen_dict, unique_hap_dict)
+
+# map all unique haplotypes to their corresponding initial probabilities
+def build_unique_haplotype_dictionary(haplotype_dictionary):
+    haps = set()
+    for (key_gen, value_hap_pair) in haplotype_dictionary:
+        hap_pair = value_hap_pair.key()
+
+
+
 
 
 # def main():

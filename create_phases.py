@@ -21,7 +21,7 @@ def phase(gen):
 	phases = []
 	for i in range(0, (int)(len(haps)/2)):
 		phases.append((haps[i], haps[-(i+1)]))
-	return phases
+	return (phases, haps)
 
 
 
@@ -30,8 +30,9 @@ def main():
 
 	# print(phase(gens[2]))
 	# print(build_haplotype_pair_dictionary(phase(gens[2])))
-	dict = build_genotype_dictionary(gens)
+	(dict, haps) = build_dictionaries(gens)
 	print dict
+	print haps
 
 if __name__ == "__main__":
 	main()
