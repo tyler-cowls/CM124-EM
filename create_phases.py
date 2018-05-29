@@ -1,3 +1,5 @@
+from parse_input import build_haplotype_dictionary
+
 haps = []
 def parse(head, tail):
 	if len(tail) == 0:
@@ -21,8 +23,10 @@ def phase(gen):
 
 
 def main():
-	gen = '12100'
-	print(phase(gen))
+	gens = ['21110', '10001', '22221']
+
+	# print(phase(gens[0]))
+	print(build_haplotype_dictionary(phase(gens[0])))
 
 if __name__ == "__main__":
 	main()
