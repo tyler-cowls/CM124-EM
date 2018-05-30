@@ -8,7 +8,7 @@ transient = 1
 def get_genotypes(file_path):
 	f = open(file_path, 'r')
 	snps = f.readlines()
-    
+
 	for i in range(0, len(snps)):
 		snps[i] = snps[i].rstrip()
 		snps[i] = snps[i].split()
@@ -17,7 +17,7 @@ def get_genotypes(file_path):
 
 	for i in range(0, len(snps[0])):
 		genotype = ""
-        
+
 		for j in range(0, len(snps)):
 			genotype += snps[j][i]
 
@@ -53,7 +53,7 @@ def get_phase_prob_pairs(genotype_list):
 def EM(genotype_list):
 	phase_list, phase_probs, haplotypes = get_phase_prob_pairs(genotype_list)
 	num_gens = len(genotype_list)
-	iterations = 50 # TODO: update appropriately
+	iterations = 15 # TODO: update appropriately
 
 	for i in range(0, iterations): # for each iteration
 		for g in range(0, num_gens): # for each genotype
@@ -71,7 +71,7 @@ def EM(genotype_list):
 				haplotypes[phase_list[g][p][0]] = (temp[steady], temp[transient]+prob)
 				temp = haplotypes[phase_list[g][p][1]]
 				haplotypes[phase_list[g][p][1]] = (temp[steady], temp[transient]+prob)
-				
+
 		for hap, probs in haplotypes.items():
 			haplotypes[hap] = (probs[transient]/(2*num_gens), 0)
 
@@ -123,7 +123,7 @@ def partial_windows_EM(file_path):
 
 		print(genotype_list)
 		phase_list, phase_probs, haplotypes = EM(genotype_list)
-		
+
 		max_haps = []
 		num_gens = len(phase_list)
 		for i in range(0, num_gens): # for each genotype
@@ -144,7 +144,7 @@ def windows_EM(file_path):
 	f = open(file_path, 'r')
 	input = f.readlines()
 
-	window_size = 50
+	window_size = 15
 	num_snps = len(input)
 	num_windows = (int)(num_snps/window_size)
 
@@ -161,7 +161,7 @@ def windows_EM(file_path):
 
 		#print(genotype_list)
 		phase_list, phase_probs, haplotypes = EM(genotype_list)
-		
+
 		max_haps = []
 		num_gens = len(phase_list)
 		for i in range(0, num_gens): # for each genotype
@@ -231,7 +231,7 @@ def windows_EM(file_path):
 def main():
 	#non_windows_EM(sys.argv[1])
 	windows_EM(sys.argv[1])
-	
+
 
 if __name__ == "__main__":
     main()
