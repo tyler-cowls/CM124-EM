@@ -11,6 +11,7 @@ def get_genotypes(file_path):
     f = open(file_path, 'r')
     snps = f.readlines()
     #print(snps)
+    
     for i in range(0, len(snps)):
         snps[i] = snps[i].rstrip()
         snps[i] = snps[i].split()
@@ -22,32 +23,147 @@ def get_genotypes(file_path):
 
     for i in range(0, len(snps[0])):
         genotype = ""
-
+        
         for j in range(0, len(snps)):
             genotype += snps[j][i]
 
         genotypes.append(genotype)
 
+    print(genotypes)
     return genotypes
 
-# def full_algorithm(file_path):
-#     f = open(file_path, 'r')
-#     lines = f.readlines()
-#     window_size = 50
-#     num_lines = len(lines)
-#     num_windows = 1+(int)(num_lines/window_size)
-#     for i in range(0, num_windows): # break input into windows 
-#         for j in range(0, window_size):
-#             snps[window_size*i + j] = snps[window_size*i + j].rstrip().split()
+def full_algorithm(file_path):
+    f = open(file_path, 'r')
+    lines = f.readlines()
+    window_size = 2
+    num_lines = len(lines)
+    num_gens = len(lines[0])
+
+    final_haps = []
+    gen_len = 0
+    full_gen_list = []
+    full_final_haps = list()
+    
+    num_windows = (int)(num_lines/window_size)
+    for i in range(0, num_windows): # break input into windows 
+        for j in range(0, window_size):
+            lines[window_size*i + j] = lines[window_size*i + j].rstrip().split()
         
-#         genotypes = list()
+        genotype_list = list()
 
-#         l1 = len(snps[0])
-#         for j in range(0, l1):
-#             genotype = ""
-#             l2 = len(snps)
-#             for k in range(0, )
+        num_cols = len(lines[0])
+        for c in range(0, num_cols):
+            genotype = ""
+            for r in range(0, window_size):
+                genotype += lines[i*window_size+r][c]
 
+            genotype_list.append(genotype)
+
+        #print(genotype_list)
+        gen_len = len(genotype_list[0])
+        if i == 0:
+            full_gen_list = genotype_list
+        else:
+            for x in range(0, len(genotype_list)):
+                full_gen_list[x] += genotype_list[x]
+
+
+        genotypes, haplotypes = EM(genotype_list)
+        #print(genotypes)
+        #print(haplotypes)
+
+        for gen, phase_dict in genotypes.items():
+            # determine the phase with the max probability
+            maxProb = -1.0
+            maxPhase = ('', '')
+            for phase, prob in phase_dict.items():
+                if prob > maxProb:
+                    maxPhase = phase
+                    maxProb = prob
+            final_haps.append(maxPhase[0])
+            final_haps.append(maxPhase[1])
+
+
+###########################################################################################
+
+    for j in range(0, num_lines - num_windows*window_size): #finish the final window
+            lines[window_size*num_windows + j] = lines[window_size*num_windows + j].rstrip().split()
+
+    genotype_list = list()
+
+    for c in range(0, num_cols):
+        genotype = ""
+        for r in range(0, num_lines - num_windows*window_size):
+            genotype += lines[num_windows*window_size+r][c]
+
+        genotype_list.append(genotype)
+
+    for x in range(0, len(genotype_list)):
+        full_gen_list[x] += genotype_list[x]
+
+    print(genotype_list)
+    #print(full_gen_list)
+
+    genotypes, haplotypes = EM(genotype_list)
+    #print(genotypes)
+    #print(haplotypes)
+        
+    for gen, phase_dict in genotypes.items():
+        maxProb = -1.0
+        maxPhase = ('', '')
+        for phase, prob in phase_dict.items():
+            if prob > maxProb:
+                maxPhase = phase
+                maxProb = prob
+        final_haps.append(maxPhase[0])
+        final_haps.append(maxPhase[1])
+
+
+    print(final_haps)
+    print(full_final_haps)
+###########################################################################################
+
+    # for i in range(0, gen_len):
+    #     row = ''
+    #     for h in final_haps:
+    #         row += h[i] + ' '
+    #     print(row) # replace with adding to file
+
+
+def full2(file_path):
+    f = open(file_path, 'r')
+    input = f.readlines()
+    window_size = 2
+    num_snps = len(input)
+    num_windows = (int)(num_snps/window_size)
+
+    total_max_haps = []
+    for i in range(0, num_windows):
+        for r in range(0, window_size):
+            input[window_size*i + r] = input[window_size*i + r].rstrip().split()
+        genotype_list = []
+        for c in range(0, len(input[0])):
+            genotype = ''
+            for r in range(0, window_size):
+                genotype += input[i*window_size + r][c]
+            genotype_list.append(genotype)
+
+        print(genotype_list)
+        genotypes, haplotypes = EM(genotype_list)
+        max_haps = []
+        for gen, phase_dict in genotypes.items():
+            maxProb = -1.0
+            maxPhase = ('', '')
+            for phase, prob in phase_dict.items():
+                if prob > maxProb:
+                    maxPhase = phase
+                    maxProb = prob
+            if maxProb > 0:
+                max_haps.extend(maxPhase)
+        total_max_haps.append(max_haps)
+
+    print(total_max_haps)
+    
 
 # build dictionary to map all haplotype pairs to their corresponding initial probabilities
 def build_haplotype_pair_dictionary(haplotype_pair_list):
@@ -91,6 +207,9 @@ def build_unique_haplotype_dictionary(haplotype_dictionary):
 
 def EM(genotype_list):
     (genotypes, haplotypes) = build_dictionaries(genotype_list)
+    print(genotypes)
+    print(haplotypes)
+    num_gens = len(genotypes)
 
     for i in range(0, 10):
         for gen, phase_dict in genotypes.items():
@@ -110,60 +229,44 @@ def EM(genotype_list):
 
         # update haplotype probabilities
         for hap, probs in haplotypes.items():
-            haplotypes[hap] = (probs[transient]/6, 0)
+            haplotypes[hap] = (probs[transient]/(2*num_gens), 0) 
 
     return (genotypes, haplotypes)
 
-def EM2(genotype_list):
-    (genotypes, haplotypes) = build_dictionaries(genotype_list)
-
-    # for each genotype -> (phase, prob)
-    for gen, phase_dict in genotypes.items():
-        # for each phase, compute phase probability
-        # phase probability = P(h1)*P(h2) / (P(h1)*P(h2) + P(h3)*P(h4) + ...)
-        sumTempProb = 0
-        for phase, prob in phase_dict.items():
-            prob = haplotypes[phase[0]][steady]*haplotypes[phase[1]][steady]
-            sumTempProb += prob
-        print(sumTempProb)
-        for phase, prob in phase_dict.items():
-            prob = prob / sumTempProb
-            haplotypes[phase[0]] = (haplotypes[phase[0]][steady], haplotypes[phase[0]][transient]+prob)
-            haplotypes[phase[1]] = (haplotypes[phase[1]][steady], haplotypes[phase[1]][transient]+prob)
-            print(phase + ' - prob = ' + str(prob))
-
 
 def main():
-    #full_algorithm(sys.argv[1])
+    #full2(sys.argv[1])
     #get_genotypes(sys.argv[1])
 
+    geno, haplo = EM(['00', '10', '10'])
+    print(geno)
 
-    genotype_list = get_genotypes(sys.argv[1])
-    gen_len = len(genotype_list[0])
+    # genotype_list = get_genotypes(sys.argv[1])
+    # gen_len = len(genotype_list[0])
 
-    (genotypes, haplotypes) = build_dictionaries(genotype_list)
-
-    genotypes, haplotypes = EM(genotype_list)
+    # genotypes, haplotypes = EM(genotype_list)
     
-    final_phases = []
-    final_haps = []
-    for gen, phase_dict in genotypes.items():
-        maxProb = -1.0
-        maxPhase = ('', '')
-        for phase, prob in phase_dict.items():
-            if prob > maxProb:
-                maxPhase = phase
-                maxProb = prob
-        final_phases.append(maxPhase)
-        final_haps.append(maxPhase[0])
-        final_haps.append(maxPhase[1])
+    # final_phases = []
+    # final_haps = []
+    # for gen, phase_dict in genotypes.items():
+    #     maxProb = -1.0
+    #     maxPhase = ('', '')
+    #     for phase, prob in phase_dict.items():
+    #         if prob > maxProb:
+    #             maxPhase = phase
+    #             maxProb = prob
+    #     final_phases.append(maxPhase)
+    #     final_haps.append(maxPhase[0])
+    #     final_haps.append(maxPhase[1])
+
+    # print(final_haps)
 
 
-    for i in range(0, gen_len):
-        row = ''
-        for h in final_haps:
-            row += h[i] + ' '
-        print(row) # replace with adding to file
+    # for i in range(0, gen_len):
+    #     row = ''
+    #     for h in final_haps:
+    #         row += h[i] + ' '
+    #     print(row) # replace with adding to file
     
 
 if __name__ == "__main__":
