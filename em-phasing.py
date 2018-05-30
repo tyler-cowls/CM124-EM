@@ -53,7 +53,7 @@ def get_phase_prob_pairs(genotype_list):
 def EM(genotype_list):
 	phase_list, phase_probs, haplotypes = get_phase_prob_pairs(genotype_list)
 	num_gens = len(genotype_list)
-	iterations = 50 # TODO: update appropriately
+	iterations = 15 # TODO: update appropriately
 
 	for i in range(0, iterations): # for each iteration
 		for g in range(0, num_gens): # for each genotype
@@ -106,7 +106,7 @@ def partial_windows_EM(file_path):
 	f = open(file_path, 'r')
 	input = f.readlines()
 
-	window_size = 2
+	window_size = 20
 	num_snps = len(input)
 	num_windows = (int)(num_snps/window_size)
 
@@ -144,7 +144,7 @@ def windows_EM(file_path):
 	f = open(file_path, 'r')
 	input = f.readlines()
 
-	window_size = 50
+	window_size = 20
 	num_snps = len(input)
 	num_windows = (int)(num_snps/window_size)
 
@@ -174,6 +174,8 @@ def windows_EM(file_path):
 					maxProb = phase_probs[i][j]
 			if maxProb >= 0:
 				max_haps.extend(maxPhase)
+				#max_haps.append(maxPhase[1])
+				#max_haps.append(maxPhase[0])
 		total_max_haps.append(max_haps)
 
 	for r in range(num_windows*window_size, num_snps):
@@ -200,6 +202,8 @@ def windows_EM(file_path):
 				maxProb = phase_probs[i][j]
 		if maxProb >= 0:
 			max_haps.extend(maxPhase)
+			#max_haps.append(maxPhase[1])
+			#max_haps.append(maxPhase[0])
 	total_max_haps.append(max_haps)
 
 	#print(total_max_haps)
