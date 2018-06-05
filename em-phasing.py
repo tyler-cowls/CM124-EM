@@ -1,8 +1,35 @@
-import create_phases
 import sys
+import time
 
 steady = 0
 transient = 1
+
+def get_haplotypes(gen):
+	haps = []
+	def parse(head, tail):
+		if len(tail) == 0:
+			haps.append(head);
+		else:
+			if tail[0] == '0':
+				parse(head+'0', tail[1:])
+			elif tail[0] == '2':
+				parse(head+'1', tail[1:])
+			else:
+				parse(head+'1', tail[1:])
+				parse(head+'0', tail[1:])
+	parse('', gen)
+	return haps
+
+def phase(gen):
+	haps = get_haplotypes(gen)
+	phases = []
+	num_haps = len(haps)
+	if num_haps == 1:
+		phases.append((haps[0], haps[0]))
+	else:
+		for i in range(0, (int)(num_haps/2)):
+			phases.append((haps[i], haps[-(i+1)]))
+	return (phases, haps)
 
 # outputs list of genotypes
 def get_genotypes(file_path):
@@ -32,7 +59,7 @@ def get_phase_prob_pairs(genotype_list):
 	unique_haps = set()
 	unique_hap_dict = {}
 	for i in range(0, num_gens):
-		phases, haps = create_phases.phase(genotype_list[i])
+		phases, haps = phase(genotype_list[i])
 		phase_list.append(phases)
 		probs = []
 		num_phases = len(phases)
@@ -78,11 +105,11 @@ def EM(genotype_list):
 	return (phase_list, phase_probs, haplotypes)
 
 
-def windows_EM(file_path):
-	f = open(file_path, 'r')
+def windows_EM(in_file, out_file, window_size):
+	f = open(in_file, 'r')
 	input = f.readlines()
 
-	window_size = 15
+	# window_size = 20
 	num_snps = len(input)
 	num_windows = (int)(num_snps/window_size)
 
@@ -112,7 +139,7 @@ def windows_EM(file_path):
 			if maxProb >= 0:
 				max_haps.extend(maxPhase)
 		total_max_haps.append(max_haps)
-		print('completed window ' + str(i))
+		print('completed window ' + str(i) + ' out of ' + str(num_windows))
 
 	for r in range(num_windows*window_size, num_snps):
 		input[r] = input[r].rstrip().split()
@@ -146,24 +173,40 @@ def windows_EM(file_path):
 		for j in range(0, l2):
 			final_max_haps[j] += total_max_haps[i][j]
 
-	with open('out.txt', 'w') as f:
-		print('', file=f)
 	l3 = len(final_max_haps[0])
 	for i in range(0, l3):
 		row = ''
 		for h in final_max_haps:
 			row += h[i] + ' '
 		if i==0:
-			with open('test_data_1_sol.txt', 'w') as f:
+			with open(out_file, 'w') as f:
 				print(row, file=f)
 		else:
-			with open('test_data_1_sol.txt', 'a+') as f:
+			with open(out_file, 'a+') as f:
 				print(row, file=f)
 
 
 def main():
-	#non_windows_EM(sys.argv[1])
-	windows_EM(sys.argv[1])
+	in_file = ''
+	out_file = ''
+	window_size = 15 # default
+	if len(sys.argv) == 4:
+		in_file = sys.argv[1]
+		out_file = sys.argv[2]
+		window_size = (int)(sys.argv[3])
+	elif len(sys.argv) == 3:
+		in_file = sys.argv[1]
+		out_file = sys.argv[2]
+	elif len(sys.argv) == 2:
+		in_file = sys.argv[1]
+		out_file = 'out.txt'
+	else:
+		print('Error: incorrect number of arguments ')
+		return -1
+
+	start = time.time()
+	windows_EM(in_file, out_file, window_size)
+	print('Total time: ', time.time() - start)
 	
 
 if __name__ == "__main__":
