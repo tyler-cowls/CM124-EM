@@ -1,4 +1,5 @@
 import sys
+import time
 
 steady = 0
 transient = 1
@@ -72,7 +73,7 @@ def get_phase_prob_pairs(genotype_list):
 def EM(genotype_list):
 	phase_list, phase_probs, haplotypes = get_phase_prob_pairs(genotype_list)
 	num_gens = len(genotype_list)
-	iterations = 10 
+	iterations = 10 # TODO: update appropriately
 
 	for i in range(0, iterations): # for each iteration
 		for g in range(0, num_gens): # for each genotype
@@ -101,6 +102,7 @@ def windows_EM(in_file, out_file, window_size):
 	f = open(in_file, 'r')
 	input = f.readlines()
 
+	# window_size = 20
 	num_snps = len(input)
 	num_windows = (int)(num_snps/window_size)
 
@@ -140,8 +142,9 @@ def windows_EM(in_file, out_file, window_size):
 			else:
 				with open(out_file, 'a+') as f:
 					print(row, file=f)
+		print('completed window ' + str(i) + ' out of ' + str(num_windows))
 
-	# run EM again on final window of variable length which was excluded earlier (if anything was excluded)
+	# run EM again on final window of variable length which was excluded earlier
 	if num_snps%window_size > 0:
 		sanitized_input = []
 		for r in range(num_windows*window_size, num_snps):
@@ -173,12 +176,10 @@ def windows_EM(in_file, out_file, window_size):
 				row += max_haps[r][c] + ' '
 			with open(out_file, 'a+') as f:
 				print(row, file=f)
+	print('completed all windows')
 
 
 def main():
-	# command line should look as follows:
-	# python3 em-phasing.py [in_file] [out_file] [window_size]
-	# must have an input file, last 2 args are not necessary 
 	in_file = ''
 	out_file = ''
 	window_size = 15 # default
@@ -196,7 +197,9 @@ def main():
 		print('Error: incorrect number of arguments ')
 		return -1
 
+	start = time.time()
 	windows_EM(in_file, out_file, window_size)
+	print('Total time: ', time.time() - start)
 	
 
 if __name__ == "__main__":
